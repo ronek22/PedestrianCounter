@@ -5,3 +5,6 @@ Istnieje wiele sposób na rozwiązanie tego problemu jak chociażby detekcja lud
 Jednak w moim przypadku zastosowałem metody oddzielania tła, konkretnie użyłem mieszanin gaussowskich(MOG).
 W dalszej części przeprowadziłem postprocessing, użyłem transformacji morfologicznych takich jak zamykanie, otwieranie, dylatacja i progowanie.
 W celu uzyskania centroidów obiektów użyłem momentów. Z tej pozycji wystarczył dość prosty algorytm do zliczania przechodniów. 
+## Screenshot *interfejs zbudowany za pomocą cvui*
+![gif](screen.png)
+
