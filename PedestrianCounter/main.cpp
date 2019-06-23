@@ -19,5 +19,5 @@ Mat kernel = getStructuringElement(MORPH_ELLIPSE, Size(10, 10));
 Mat kernelBig = getStructuringElement(MORPH_ELLIPSE, Size(40, 40));
 
 Mat filter_mask(Mat frame) {
-	
+	// TEST
 }
