@@ -43,7 +43,9 @@ int pID = 1;
 // GUI VARIABLES
 bool play = true;
 bool turnOn = true;
+bool videoEnded = false;
 int view = 1;
+
 
 
 int R_WIDTH = 500;
@@ -92,8 +94,6 @@ void tracking_algorithm() {
 		if (hierarchy[i][3] != -1)
 			continue;
 
-		//cout << H << ", " << W << ", " << AREA_FRAME << ", " << MAX_AREA << ", " << MIN_AREA << endl;
-
 		if (!inRange(MIN_AREA, MAX_AREA, int(contourArea(contour))))
 			continue;
 
@@ -115,10 +115,9 @@ void tracking_algorithm() {
 				else {
 					Point pc = (*it).get_centroid(); // person centroid
 					if ((std::abs(bounding.x - pc.x) <= bounding.width) && (std::abs(bounding.y - pc.y) <= bounding.height)) {
-						//cout << "ABS: " << std::abs(bounding.x - pc.x) << " <= " << bounding.width << endl;
 						isNew = false;
 						(*it).update_coords(center.x, center.y);
-						if ((*it).cross(BREAKLINE)) { // SOMETHING DOESNT WORK HERE
+						if ((*it).cross(BREAKLINE)) {
 							peopleCounted++;
 							(*it).set_done();
 							break;
@@ -152,9 +151,6 @@ void run_system() {
 	findContours(contourImg, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE);
 	tracking_algorithm();
 
-	/*for (auto& i : people)
-		putText(frame, to_string(i.get_id()), i.get_centroid(), FONT, 0.3, Scalar(0, 0, 255), 1);*/
-
 	// for GUI purpose
 	cvtColor(fgmask, fgmask, COLOR_GRAY2RGB);
 	cvtColor(thresh, thresh, COLOR_GRAY2RGB);
@@ -164,56 +160,30 @@ void run_system() {
 	line(frame, Point(0, DOWN_LIMIT), Point(W, DOWN_LIMIT), Scalar(0, 255, 255), 2);
 }
 
-string type2str(int type) {
-	string r;
-
-	uchar depth = type & CV_MAT_DEPTH_MASK;
-	uchar chans = 1 + (type >> CV_CN_SHIFT);
-
-	switch (depth) {
-	case CV_8U:  r = "8U"; break;
-	case CV_8S:  r = "8S"; break;
-	case CV_16U: r = "16U"; break;
-	case CV_16S: r = "16S"; break;
-	case CV_32S: r = "32S"; break;
-	case CV_32F: r = "32F"; break;
-	case CV_64F: r = "64F"; break;
-	default:     r = "User"; break;
-	}
-
-	r += "C";
-	r += (chans + '0');
-
-	return r;
-}
 
 int main() {
 	Mat GUI = Mat(700, 950, CV_8UC3);
-	cap.open("example_02.mp4");
+	cap.open("example.mp4");
 	int video_length = cap.get(CAP_PROP_FRAME_COUNT);
 	configVar(cap);
 	int progress = 0;
-
 	cvui::init(WINDOW_NAME);
 	while (true) {
 		progress = cap.get(CAP_PROP_POS_FRAMES);
 		if (play) {
-			cap.read(frame);
+			if (!cap.read(frame)) {
+				cap.set(CAP_PROP_POS_FRAMES, 0);
+				cap.read(frame);
+			}
 			resize(frame, frame, Size(W, H), INTER_LINEAR);
 		}
 
-		if (frame.empty()) {
-			frame = Scalar(255, 255, 255);
-			turnOn = false;
-		}
-
 		GUI = Scalar(49, 52, 49);
-		run_system();
-
-
+		if (turnOn && play)
+			run_system();
 
 		cvui::beginRow(GUI, 10, 50, 20, 150, 10);
-		cvui::beginColumn(660, 500, 20);
+		cvui::beginColumn(550, 500, 20);
 		switch (view)
 		{
 			case 1:
@@ -264,8 +234,10 @@ int main() {
 
 		cvui::text("System");
 		cvui::beginRow();
-		cvui::button("On");
-		cvui::button("Off");
+		if(cvui::button("On"))
+			turnOn = true;
+		if (cvui::button("Off"))
+			turnOn = false;
 		if (cvui::button("Reset counter")) {
 			peopleCounted = 0;
 		}
@@ -276,22 +248,15 @@ int main() {
 		cvui::trackbar(230, &MIN_AREA, 100, 10000);
 		cvui::text("Maximum Area Detected", 0.3);
 		cvui::trackbar(230, &MAX_AREA, 1000, 100000);
-
-
 		cvui::endColumn();
-
 		cvui::endRow();
 
 
 
-		// This function must be called *AFTER* all UI components. It does
-		// all the behind the scenes magic to handle mouse clicks, etc.
 		cvui::update();
 
-		// Show everything on the screen
 		cv::imshow(WINDOW_NAME, GUI);
 
-		// Check if ESC key was pressed
 		if (cv::waitKey(20) == 27) {
 			break;
 		}
