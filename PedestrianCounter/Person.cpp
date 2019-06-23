@@ -22,15 +22,36 @@ void Person::age_one() {
 		done = true;
 }
 
+bool isInRange(unsigned low, unsigned high, unsigned x)
+{
+	return  ((x - low) <= (high - low));
+}
+
 bool Person::cross(int crossline) {
 	if (tracks.size() >= 2) {
-		if ((tracks.front().y < crossline <= tracks.back().y) || (tracks.front().y > crossline >= tracks.back().y)) {
+		//cout << tracks.front().y << " < " << crossline << " <= " << tracks.back().y << " -> " << ((tracks.front().y > crossline) && (crossline >= tracks.back().y)) <<  endl;
+		if (((tracks.front().y < crossline) && (crossline <= tracks.back().y)) || (((tracks.front().y > crossline) && (crossline >= tracks.back().y)))) {
 			return true;
 		}
 		return false;
 	}
 	return false;
 }
+
+Point Person::get_centroid() {
+	return center;
+}
+
+bool Person::isDone() {
+	return done;
+}
+
+int Person::get_id() {
+	return id;
+}
+
+Person::~Person(){}
+
 
 
 

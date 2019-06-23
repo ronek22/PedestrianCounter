@@ -1,5 +1,5 @@
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/highgui/highgui.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui/highgui.hpp"
 #include <iostream>
 
 using namespace cv;
@@ -20,6 +20,11 @@ public:
 	void update_coords(int xn, int yn);
 	void set_done();
 	void age_one();
+	Point get_centroid();
 	bool cross(int crossline);
+	bool isDone();
+	int get_id();
+
+	~Person();
 };
 
